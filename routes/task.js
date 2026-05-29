@@ -27,5 +27,54 @@ router.post('/add', async(req,res) =>{
     }
 })
 
+router.patch('/:id', async(req,res) =>{
+    try{
+        const id = req.params.id
+        const updates = req.body
+
+        if (Object.keys(updates).length === 0) {
+            return res.status(400).json({error:  'Нет данных'})
+        }
+
+        const fieldsTitle = []
+        const fielsdValues = []
+
+        for (const [fieldTitle, fieldValue] of Object.entries(updates)) {
+            fieldsTitle.push(`${fieldTitle} = ?`)
+            fielsdValues.push(fieldValue)
+        }
+
+        fielsdValues.push(id)
+
+        const [result] = await db.execute(
+            `UPDATE tasks SET ${fieldsTitle.join(' , ')} WHERE id = ?`, fielsdValues
+        )
+
+        const [update] = await db.execute('SELECT * FROM tasks WHERE id = ?', [id])
+
+        if(update.length === 0){
+            res.status(404).json({error: 'Не нашел задачу'})
+        }
+
+        res.json(update[0])
+
+    } catch(error){
+        console.error(error)
+        res.status(500).json({error:'Ошибка при обновлении задачи'})
+    }
+})
+
+router.delete('/delete/:id', async(req,res) =>{
+    try{
+        const id = req.params.id
+        const [result] = await db.execute(
+            'DELETE FROM tasks WHERE id = ?', [id]
+        )
+        res.json({message: "Задача удалена"})
+    }catch(error){
+        console.error(error)
+        res.status(500).json({error: 'ошибка при удалении'})
+    }
+})
 
 module.exports = router;
