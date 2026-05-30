@@ -10,6 +10,9 @@ app.use(express.urlencoded({ extended: true }))
 const taskRouter = require('./routes/task')
 app.use('/tasks', taskRouter)
 
+const usersRouter = require('./routes/users')
+app.use('/users', usersRouter)
+
 app.get('/', (req,res) =>{
     res.send('SERVER NORM')
 })
