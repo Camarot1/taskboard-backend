@@ -7,10 +7,26 @@ router.get('/', async(req, res) => {
         const [tasks] = await db.execute('SELECT * from tasks')
         res.json(tasks)
     }catch(error){
-        res.status(500).json({error: 'Ошибка при получении задач'})
+        res.status(500).json({message: 'Ошибка при получении задач'})
     }
 })
 
+router.get('/:id', async(req,res)=>{
+    try{
+        const id = req.params.id
+
+        const [result] = await db.execute('SELECT * from tasks WHERE user_id = ?', [id])
+
+        if (result.length === 0){
+            res.status(404).json({message:'Нет задач у юзера'})
+        }
+
+        res.json(result)
+    }catch(error){
+        console.error(error)
+        res.status(500).json({message:'Ошибка при получении задач'})
+    }
+})
 
 router.post('/add', async(req,res) =>{
     try{
@@ -20,20 +36,20 @@ router.post('/add', async(req,res) =>{
             'INSERT INTO tasks (user_id, company_id, title, description, status, display_order) values (?,?,?,?,?,?)',
             [user_id, company_id, title, description, status, display_order]
         )
-        res.json({success: true})
+        res.json({message: true})
     }catch(error){
         console.error(error)
-        res.status(500).json({error: 'Ошибка при добавлении задачи'})
+        res.status(500).json({message: 'Ошибка при добавлении задачи'})
     }
 })
 
-router.patch('/:id', async(req,res) =>{
+router.patch('/patch/:id', async(req,res) =>{
     try{
         const id = req.params.id
         const updates = req.body
 
         if (Object.keys(updates).length === 0) {
-            return res.status(400).json({error:  'Нет данных'})
+            return res.status(400).json({message:  'Нет данных'})
         }
 
         const fieldsTitle = []
@@ -53,14 +69,14 @@ router.patch('/:id', async(req,res) =>{
         const [update] = await db.execute('SELECT * FROM tasks WHERE id = ?', [id])
 
         if(update.length === 0){
-            res.status(404).json({error: 'Не нашел задачу'})
+            res.status(404).json({message: 'Не нашел задачу'})
         }
 
         res.json(update[0])
 
     } catch(error){
         console.error(error)
-        res.status(500).json({error:'Ошибка при обновлении задачи'})
+        res.status(500).json({message:'Ошибка при обновлении задачи'})
     }
 })
 
@@ -73,7 +89,7 @@ router.delete('/delete/:id', async(req,res) =>{
         res.json({message: "Задача удалена"})
     }catch(error){
         console.error(error)
-        res.status(500).json({error: 'ошибка при удалении'})
+        res.status(500).json({message: 'ошибка при удалении'})
     }
 })
 
