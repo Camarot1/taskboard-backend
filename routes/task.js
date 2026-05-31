@@ -80,6 +80,31 @@ router.patch('/patch/:id', async(req,res) =>{
     }
 })
 
+router.post('/done/:id', async(req,res) =>{
+    const id = req.params.id
+    const conn = await db.getConnection()
+    try{
+        await conn.beginTransaction()
+
+        const  [result] = await db.execute('SELECT * from tasks where id = ?', [id])
+
+        const task = result[0]
+
+        await conn.execute('INSERT INTO archive (task_id, user_id, company_id, title, description) values (?,?,?,?,?)', [task.id, task.user_id, task.company_id, task.title, task.description])
+
+        await conn.execute('DELETE from tasks where id = ?', [id])
+        
+        await conn.commit()
+
+        res.json({message:"True"})
+
+
+    }catch(error){
+        console.error(error)
+        res.status(500).json({message:'ошибка при переводе в архив'})
+    }
+})
+
 router.delete('/delete/:id', async(req,res) =>{
     try{
         const id = req.params.id
