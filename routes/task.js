@@ -91,13 +91,10 @@ router.post('/done/:id', async(req,res) =>{
         const task = result[0]
 
         await conn.execute('INSERT INTO archive (task_id, user_id, company_id, title, description) values (?,?,?,?,?)', [task.id, task.user_id, task.company_id, task.title, task.description])
-
         await conn.execute('DELETE from tasks where id = ?', [id])
-        
         await conn.commit()
 
         res.json({message:"True"})
-
 
     }catch(error){
         console.error(error)
