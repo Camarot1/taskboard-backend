@@ -1,6 +1,10 @@
 const express = require('express')
 const router = express.Router()
 const db = require('../db')
+const bcrypt = require('bcryptjs')
+const jwt = require('jsonwebtoken')
+
+const auth = require('../middleware/auth.js')
 
 router.post('/login', async(req, res) => {
     const { login, password} = req.body
@@ -44,10 +48,12 @@ router.post('/register', async(req,res)=>{
         const [users] = await db.execute('SELECT * FROM users WHERE username = ? OR email = ?', [username, email]);
 
         if (users.length > 0){
-            return res.status(400).json({message:"Этот логин или почтв заняты"})
+            return res.status(400).json({message:"Этот логин или почта заняты"})
         }
 
-        const [result] = await db.execute('INSERT INTO users (email, username, password, company_id, isAdmin) VALUES (?,?,?,?,?)' ,[email, username, password, 2, 0])
+        const hashedPassword = await bcrypt.hash(password, 10)
+
+        const [result] = await db.execute('INSERT INTO users (email, username, password, company_id, isAdmin) VALUES (?,?,?,?,?)' ,[email, username, hashedPassword, 1, 0])
 
         res.json({message:"Успешная регистрация"})
 
@@ -57,4 +63,11 @@ router.post('/register', async(req,res)=>{
     }
 })
 
+router.post('/test', auth, (req,res) =>{
+    try{
+        req.profile
+    }catch(error){
+        console.error(error)
+    }
+})
 module.exports = router
