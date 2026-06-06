@@ -16,9 +16,12 @@ router.post('/login', async(req, res) => {
         }
 
         const user = users[0]
-        if (!(user.password == password)){
+        const check = bcrypt.compare(password, user.password)
+        if (!check){
             return res.status(401).json({message:"Неверный пароль"})
         }
+
+        const token = jwt.sign({id: user.id, login: user.username, company_id: user.company_id}, process.env.JWT_SECRET, {expiresIn: '1d'})
 
         res.json({
             success: true,
@@ -26,7 +29,8 @@ router.post('/login', async(req, res) => {
                 id: user.id,
                 login: user.username,
                 company_id: user.company_id
-            }
+            },
+            token
         }) 
     }catch(error) {
         console.error(error)
