@@ -38,6 +38,7 @@ router.post('/login', async(req, res) => {
     }
 })
 
+
 router.post('/register', async(req,res)=>{
     try{
         const {email, username, password} = req.body
@@ -57,7 +58,7 @@ router.post('/register', async(req,res)=>{
 
         const hashedPassword = await bcrypt.hash(password, 10)
 
-        const [result] = await db.execute('INSERT INTO users (email, username, password, company_id, isAdmin) VALUES (?,?,?,?,?)' ,[email, username, hashedPassword, 1, 0])
+        const [result] = await db.execute('INSERT INTO users (email, username, password, isAdmin) VALUES (?,?,?,?)' ,[email, username, hashedPassword, 0])
 
         res.json({message:"Успешная регистрация"})
 
@@ -67,11 +68,4 @@ router.post('/register', async(req,res)=>{
     }
 })
 
-router.post('/test', auth, (req,res) =>{
-    try{
-        req.profile
-    }catch(error){
-        console.error(error)
-    }
-})
 module.exports = router
